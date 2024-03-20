@@ -58,20 +58,31 @@ class WeatherScreen(Screen):
     def show_weather_data(self, instance):
         location = self.input_field.text
 
+        if not location:
+            return
+
+        button_instance = instance
+
+        # Disable button
+        button_instance.disabled = True
+
         # Show loading popup
         loading_popup = Popup(title='Loading...', content=Label(text='Fetching weather data'), size_hint=(None, None),
                               size=(400, 200))
         loading_popup.open()
 
         # Fetch weather data in a separate thread
-        threading.Thread(target=self.fetch_weather_data_thread, args=(location, loading_popup)).start()
+        threading.Thread(target=self.fetch_weather_data_thread, args=(location, loading_popup, button_instance)).start()
 
-    def fetch_weather_data_thread(self, location, loading_popup):
+    def fetch_weather_data_thread(self, location, loading_popup, button_instance):
         # Fetch weather data
         weather_data = fetch_weather_data(location)
 
         # Close loading popup
         loading_popup.dismiss()
+
+        # Enable button
+        button_instance.disabled = False
 
         if weather_data["status"] == "success":
             # Display weather data
@@ -90,4 +101,4 @@ class WeatherScreen(Screen):
                 self.weather_image.source = "assets/images/confused.png"
         else:
             self.weather_label.text = "Error fetching data"
-            self.weather_image.source = ''  # Clear image source if error occurs
+            self.weather_image.source = "assets/images/confused.png"
